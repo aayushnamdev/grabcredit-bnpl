@@ -23,6 +23,7 @@ import type { EmiOption, PayUEmiCreateResponse } from "@/types/api";
 interface BnplOfferWidgetProps {
   amount: number;
   onSelectAlternative?: () => void;
+  externalConfirmResult?: PayUEmiCreateResponse | null;
 }
 
 /** Return the first `count` complete sentences from a block of text. */
@@ -96,7 +97,7 @@ const TIER_CONFIG = {
 
 type ApprovedTier = keyof typeof TIER_CONFIG;
 
-export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidgetProps) {
+export function BnplOfferWidget({ amount, onSelectAlternative, externalConfirmResult }: BnplOfferWidgetProps) {
   const { state, fetchEmiOptions, confirmEmi, payFull } = usePersonaContext();
   const { score, emiOptions, narrative, isNarrativeLoading } = state;
 
@@ -231,7 +232,9 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
   /* ══════════════════════════════════════════════
      SUCCESS STATE — PayU confirmation
      ══════════════════════════════════════════════ */
-  if (confirmResult && confirmResult.status === "success") {
+  const activeResult = externalConfirmResult ?? confirmResult;
+  if (activeResult && activeResult.status === "success") {
+    const confirmResult = activeResult; // alias so the JSX below can use confirmResult unchanged
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}

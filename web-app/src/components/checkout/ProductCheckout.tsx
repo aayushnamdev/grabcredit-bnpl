@@ -88,15 +88,16 @@ function TierPill({ score }: { score: { score: number; tier: string; rateTier: n
 export function ProductCheckout() {
   const [activeTab, setActiveTab] = useState<"grabcredit" | "upi" | "card">("grabcredit");
   const [isPayingFull, setIsPayingFull] = useState(false);
-  const [fullPayDone, setFullPayDone] = useState(false);
+  const [fullPayResult, setFullPayResult] = useState<import("@/types/api").PayUEmiCreateResponse | null>(null);
   const { state, payFull } = usePersonaContext();
   const PRODUCT_AMOUNT = 18499;
 
   // Reset on persona switch
-  useEffect(() => { setFullPayDone(false); setIsPayingFull(false); }, [state.personaId]);
+  useEffect(() => { setFullPayResult(null); setIsPayingFull(false); }, [state.personaId]);
 
   const handleTotalPay = async () => {
     setIsPayingFull(true);
+    setActiveTab("grabcredit");
     const result = await payFull(PRODUCT_AMOUNT);
     setIsPayingFull(false);
     if (!result) return;
@@ -112,7 +113,9 @@ export function ProductCheckout() {
       document.body.appendChild(form);
       form.submit();
     } else if (result.status === "success") {
-      setFullPayDone(true);
+      setFullPayResult(result);
+      // Scroll the BNPL widget into view to show the success screen
+      setTimeout(() => document.getElementById("bnpl-widget")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
     }
   };
 
@@ -201,13 +204,16 @@ export function ProductCheckout() {
                   exit={{ height: 0, opacity: 0 }}
                   className="px-4 sm:px-5 pb-4 sm:pb-5 overflow-hidden"
                 >
-                  <BnplOfferWidget
-                    amount={PRODUCT_AMOUNT}
-                    onSelectAlternative={() => {
-                      setActiveTab("upi");
-                      document.getElementById("upi-option")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }}
-                  />
+                  <div id="bnpl-widget">
+                    <BnplOfferWidget
+                      amount={PRODUCT_AMOUNT}
+                      externalConfirmResult={fullPayResult}
+                      onSelectAlternative={() => {
+                        setActiveTab("upi");
+                        document.getElementById("upi-option")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }}
+                    />
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -324,21 +330,21 @@ export function ProductCheckout() {
               </div>
             </div>
 
-            {/* Total — acts as a Pay Now shortcut */}
+            {/* Total — Pay Full Amount now */}
             <button
-              onClick={() => {
-                setActiveTab("grabcredit");
-                setTimeout(() => {
-                  const btn = document.getElementById("bnpl-pay-btn") as HTMLButtonElement | null;
-                  btn?.scrollIntoView({ behavior: "smooth", block: "center" });
-                  btn?.click();
-                }, 350);
-              }}
-              className="w-full mt-2 bg-gradient-to-r from-text-primary to-gray-800 rounded-xl p-4 sm:p-5 flex items-center justify-between text-white shadow-xl shadow-black/10 hover:from-gray-800 hover:to-gray-700 active:scale-[0.99] transition-all cursor-pointer"
+              onClick={handleTotalPay}
+              disabled={isPayingFull || !!fullPayResult}
+              className="w-full mt-2 bg-gradient-to-r from-text-primary to-gray-800 rounded-xl p-4 sm:p-5 flex items-center justify-between text-white shadow-xl shadow-black/10 hover:from-gray-800 hover:to-gray-700 active:scale-[0.99] disabled:opacity-70 transition-all cursor-pointer"
             >
-              <span className="font-medium text-white/90 text-sm">Total to Pay</span>
-              <span className="text-xl sm:text-2xl font-extrabold tracking-tight">
-                ₹{PRODUCT_AMOUNT.toLocaleString()}
+              <span className="font-medium text-white/90 text-sm">
+                {isPayingFull ? "Processing…" : fullPayResult ? "Payment Done ✓" : "Total to Pay"}
+              </span>
+              <span className="text-xl sm:text-2xl font-extrabold tracking-tight flex items-center">
+                {isPayingFull ? (
+                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full" />
+                ) : (
+                  `₹${PRODUCT_AMOUNT.toLocaleString()}`
+                )}
               </span>
             </button>
 
