@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+.next/
+out/
+build/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Next.js telemetry
+.next/
+
+# Claude Code project files (contain local settings, memory)
+.claude/
+
+# Internal planning docs (not for public repo — move to docs/ if you want them)
+GRABCREDIT_BNPL_BLUEPRINT.md
+GRABCREDIT_SCORING_SPEC.md
+LOOM_SCRIPT.md
+*.pdf
+UNDERSTAND_YOUR_PROJECT.md

@@ -1,0 +1,20 @@
+{
+  "name": "grabcredit-mcp-server",
+  "private": true,
+  "scripts": {
+    "build": "tsc && cp -r src/data dist/data",
+    "start": "node dist/index.js",
+    "dev": "npx ts-node src/index.ts",
+    "verify": "npx ts-node src/scoring/verify.ts",
+    "test:narratives": "npx ts-node src/narrative/testNarratives.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4",
+    "ts-node": "^10.9",
+    "@types/node": "^20"
+  }
+}

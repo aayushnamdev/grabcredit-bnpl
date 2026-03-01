@@ -1,0 +1,109 @@
+[
+  {
+    "user_id": "user_001",
+    "name": "Priya Sharma",
+    "registration_date": "2024-08-15",
+    "email": "priya.sharma@gmail.com",
+    "phone": "+91-9876543210",
+    "total_transactions": 214,
+    "total_gmv": 85200,
+    "active_months": 18,
+    "categories_shopped": ["Fashion", "Travel", "Food", "Electronics", "Health"],
+    "avg_monthly_spend": 4733,
+    "deal_redemption_rate": 0.55,
+    "return_rate": 0.02,
+    "payment_mode_distribution": {
+      "Credit Card": 0.60,
+      "UPI": 0.30,
+      "Debit Card": 0.10
+    },
+    "gmv_trend_12m": [3800, 4100, 4200, 4400, 4300, 4600, 4700, 4900, 5000, 5200, 5400, 5600],
+    "favorite_merchants": ["Myntra", "MakeMyTrip", "Zomato"],
+    "last_transaction_date": "2026-02-24"
+  },
+  {
+    "user_id": "user_002",
+    "name": "Rahul Verma",
+    "registration_date": "2025-02-18",
+    "email": "rahul.verma@gmail.com",
+    "phone": "+91-9823456789",
+    "total_transactions": 80,
+    "total_gmv": 26800,
+    "active_months": 12,
+    "categories_shopped": ["Food", "Fashion", "Health"],
+    "avg_monthly_spend": 2233,
+    "deal_redemption_rate": 0.65,
+    "return_rate": 0.05,
+    "payment_mode_distribution": {
+      "UPI": 0.70,
+      "Debit Card": 0.20,
+      "COD": 0.10
+    },
+    "gmv_trend_12m": [2100, 2300, 2000, 2200, 2400, 2100, 2200, 2500, 2300, 2100, 2400, 2200],
+    "favorite_merchants": ["Zomato", "Swiggy", "Myntra"],
+    "last_transaction_date": "2026-02-22"
+  },
+  {
+    "user_id": "user_003",
+    "name": "Ananya Iyer",
+    "registration_date": "2025-11-20",
+    "email": "ananya.iyer@gmail.com",
+    "phone": "+91-9901234567",
+    "total_transactions": 25,
+    "total_gmv": 9000,
+    "active_months": 3,
+    "categories_shopped": ["Travel", "Food"],
+    "avg_monthly_spend": 3000,
+    "deal_redemption_rate": 0.44,
+    "return_rate": 0.00,
+    "payment_mode_distribution": {
+      "Credit Card": 0.50,
+      "UPI": 0.50
+    },
+    "gmv_trend_12m": [0, 0, 0, 0, 0, 0, 0, 0, 0, 1500, 3000, 4500],
+    "favorite_merchants": ["MakeMyTrip", "EaseMyTrip", "Zomato"],
+    "last_transaction_date": "2026-02-23"
+  },
+  {
+    "user_id": "user_004",
+    "name": "Vikram Singh",
+    "registration_date": "2024-12-10",
+    "email": "vikram.singh@gmail.com",
+    "phone": "+91-9812345678",
+    "total_transactions": 60,
+    "total_gmv": 48200,
+    "active_months": 14,
+    "categories_shopped": ["Fashion", "Electronics", "Food", "Health"],
+    "avg_monthly_spend": 3443,
+    "deal_redemption_rate": 0.85,
+    "return_rate": 0.117,
+    "payment_mode_distribution": {
+      "Credit Card": 0.20,
+      "UPI": 0.40,
+      "COD": 0.40
+    },
+    "gmv_trend_12m": [7200, 6800, 6000, 5200, 4500, 3800, 3000, 2200, 1800, 1200, 1000, 1000],
+    "favorite_merchants": ["Myntra", "Croma", "Zomato"],
+    "last_transaction_date": "2026-02-20"
+  },
+  {
+    "user_id": "user_005",
+    "name": "Ghost User",
+    "registration_date": "2026-02-23",
+    "email": "ghost.user@tempmail.com",
+    "phone": "+91-9999999999",
+    "total_transactions": 2,
+    "total_gmv": 85000,
+    "active_months": 1,
+    "categories_shopped": ["Electronics"],
+    "avg_monthly_spend": 85000,
+    "deal_redemption_rate": 0.00,
+    "return_rate": 0.00,
+    "payment_mode_distribution": {
+      "COD": 1.00
+    },
+    "gmv_trend_12m": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 85000],
+    "favorite_merchants": ["Croma", "Reliance Digital"],
+    "last_transaction_date": "2026-02-25"
+  }
+]
