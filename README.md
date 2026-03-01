@@ -2,6 +2,10 @@
 
 **Live demo → [https://grabcredit-bnpl.vercel.app](https://grabcredit-bnpl.vercel.app)**
 
+**Loom walkthrough:**
+- [Part 1 — Business & Product Demo](https://www.loom.com/share/5b65211576e24302a653b4ea78705578) (5 min)
+- [Part 2 — Technical Architecture](https://www.loom.com/share/4e4d831e3b4f41c5a8a0b6ad578f3b9d) (5 min)
+
 GrabOn processes millions of coupon redemptions and deal transactions every year. Most Indians don't have a CIBIL score or a credit card — so traditional lenders can't serve them. But their shopping behavior tells a complete story: how regularly they buy, whether their spending is growing, how they pay, what categories they shop. **GrabCredit reads that story and turns it into an instant Buy Now, Pay Later decision at checkout.**
 
 No credit bureau pull. No income verification. No paperwork. A shopper adds headphones to cart, clicks "Pay with GrabCredit," and in seconds sees a personalised EMI offer — plus an AI-written explanation of exactly why they qualify, or what they need to improve to get there.
@@ -303,7 +307,8 @@ Templates would be faster but they'd feel generic. The prompt feeds Claude the r
 
 ## Loom Walkthrough
 
-<!-- Add your Loom link here before submitting -->
+- [Part 1 — Business & Product Demo](https://www.loom.com/share/5b65211576e24302a653b4ea78705578) (5 min)
+- [Part 2 — Technical Architecture](https://www.loom.com/share/4e4d831e3b4f41c5a8a0b6ad578f3b9d) (5 min)
 
 ---
 
