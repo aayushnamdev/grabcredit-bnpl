@@ -6,6 +6,8 @@
 - [Part 1 — Business & Product Demo](https://www.loom.com/share/5b65211576e24302a653b4ea78705578) (5 min)
 - [Part 2 — Technical Architecture](https://www.loom.com/share/4e4d831e3b4f41c5a8a0b6ad578f3b9d) (5 min)
 
+*Built for the GrabOn Vibe Coder Challenge — Project 01. GrabCredit leverages GrabOn's 96M+ annual transactions and its partnerships with Poonawalla Fincorp (NBFC lending license) and PayU LazyPay to enable embedded BNPL at checkout.*
+
 GrabOn processes millions of coupon redemptions and deal transactions every year. Most Indians don't have a CIBIL score or a credit card — so traditional lenders can't serve them. But their shopping behavior tells a complete story: how regularly they buy, whether their spending is growing, how they pay, what categories they shop. **GrabCredit reads that story and turns it into an instant Buy Now, Pay Later decision at checkout.**
 
 No credit bureau pull. No income verification. No paperwork. A shopper adds headphones to cart, clicks "Pay with GrabCredit," and in seconds sees a personalised EMI offer — plus an AI-written explanation of exactly why they qualify, or what they need to improve to get there.
@@ -59,6 +61,80 @@ No credit bureau pull. No income verification. No paperwork. A shopper adds head
 3. **The scoring engine** reads GrabOn transaction data and produces a 0–1000 score from 5 behavioral factors. No black box — every factor is explainable and every decision has a reason.
 
 4. **PayU LazyPay** handles the EMI disbursal. The integration has two modes: mock (works on first clone, no credentials) and live sandbox (real PayU API calls, real transaction IDs). Both paths are production-ready — the mock exists so evaluators don't need to set up credentials to see the full UI flow.
+
+---
+
+## How to Run Locally
+
+### Prerequisites
+- **Node.js** ≥ 18
+- **Anthropic API key** — for Claude-powered narratives ([get one here](https://console.anthropic.com/settings/keys))
+
+### Quick start (one command)
+
+```bash
+git clone https://github.com/aayushnamdev/grabcredit-bnpl.git
+cd grabcredit-bnpl
+
+# Set your API key
+cp .env.example web-app/.env.local
+# Edit web-app/.env.local and add your ANTHROPIC_API_KEY
+
+# Install, build, and launch
+./scripts/demo.sh
+```
+
+Open [http://localhost:3000](http://localhost:3000). Switch personas at the top of the page.
+
+### Manual setup (step-by-step)
+
+```bash
+# Step 1: Build the MCP server
+cd mcp-server
+npm install
+npm run build       # compiles TypeScript → dist/, copies src/data/*.json → dist/data/
+
+# Step 2: Configure env vars
+cd ../web-app
+cp ../.env.example .env.local
+# Edit .env.local — paste your ANTHROPIC_API_KEY
+
+# Step 3: Start the web app
+npm install
+npm run dev
+```
+
+### Run the test suite
+
+```bash
+cd mcp-server
+npm test
+```
+
+21 unit tests covering: all 5 persona tiers, credit limit interpolation, the confidence dampener (zero-transaction edge case), fraud flag boundaries (6/7/8-day account age rule, single-pattern combo), and factor weight integrity.
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `ANTHROPIC_API_KEY` | Yes (for narratives) | — | Claude API key for generating credit narratives |
+| `PAYU_MODE` | No | `mock` | `mock` for simulated PayU responses, `live` for sandbox API |
+| `PAYU_KEY` | Only if live | — | PayU sandbox merchant key |
+| `PAYU_SALT` | Only if live | — | PayU sandbox merchant salt |
+
+---
+
+## The 5 Personas
+
+Each persona is a carefully designed behavioral archetype that tells a story during the demo:
+
+| # | Name | Archetype | Score | Tier | What They Demonstrate |
+|---|------|-----------|-------|------|----------------------|
+| 1 | **Priya Sharma** | Power User | 927 | Pre-Approved | 200+ transactions across 5 categories, 18-month history, growing GMV, 1.8% returns. The dream customer — pre-approved with ₹92K limit and 0% EMI. |
+| 2 | **Rahul Verma** | Steady Spender | 672 | Approved | 80 transactions, mostly Food + Fashion, flat but consistent GMV, 5% returns. Solid but not exceptional — approved at 14% APR with ₹25K limit. |
+| 3 | **Ananya Iyer** | New But Promising | 489 | Conditional | 25 transactions in 3 months, strong upward trajectory but single category (Travel), 0% returns. Great potential, limited history — conditional at 20% APR with ₹8K limit. Shows the "almost there" messaging. |
+| 4 | **Vikram Singh** | Declining User | 312 | Rejected | 60 transactions but GMV declining 40% over 6 months, rising returns (11%), narrowing categories. The empathetic rejection — "we see you're pulling back, and we respect that." Shows the improvement path UI. |
+| 5 | **Ghost User** | Suspicious New | 0 | Fraud-Rejected | 3 days old, 2 high-value electronics transactions, COD only, zero coupons. Triggers 3 fraud flags simultaneously. Shows the security-conscious rejection without revealing detection logic. |
 
 ---
 
@@ -150,104 +226,6 @@ Credit limits are linearly interpolated within each tier band — a score of 700
 
 ---
 
-## The 5 Personas
-
-Each persona is a carefully designed behavioral archetype that tells a story during the demo:
-
-| # | Name | Archetype | Score | Tier | What They Demonstrate |
-|---|------|-----------|-------|------|----------------------|
-| 1 | **Priya Sharma** | Power User | 927 | Pre-Approved | 200+ transactions across 5 categories, 18-month history, growing GMV, 1.8% returns. The dream customer — pre-approved with ₹92K limit and 0% EMI. |
-| 2 | **Rahul Verma** | Steady Spender | 672 | Approved | 80 transactions, mostly Food + Fashion, flat but consistent GMV, 5% returns. Solid but not exceptional — approved at 14% APR with ₹25K limit. |
-| 3 | **Ananya Iyer** | New But Promising | 489 | Conditional | 25 transactions in 3 months, strong upward trajectory but single category (Travel), 0% returns. Great potential, limited history — conditional at 20% APR with ₹8K limit. Shows the "almost there" messaging. |
-| 4 | **Vikram Singh** | Declining User | 312 | Rejected | 60 transactions but GMV declining 40% over 6 months, rising returns (11%), narrowing categories. The empathetic rejection — "we see you're pulling back, and we respect that." Shows the improvement path UI. |
-| 5 | **Ghost User** | Suspicious New | 0 | Fraud-Rejected | 3 days old, 2 high-value electronics transactions, COD only, zero coupons. Triggers 3 fraud flags simultaneously. Shows the security-conscious rejection without revealing detection logic. |
-
----
-
-## How to Run Locally
-
-### Prerequisites
-- **Node.js** ≥ 18
-- **Anthropic API key** — for Claude-powered narratives ([get one here](https://console.anthropic.com/settings/keys))
-
-### Quick start (one command)
-
-```bash
-git clone https://github.com/aayushnamdev/grabcredit-bnpl.git
-cd grabcredit-bnpl
-
-# Set your API key
-cp .env.example web-app/.env.local
-# Edit web-app/.env.local and add your ANTHROPIC_API_KEY
-
-# Install, build, and launch
-./scripts/demo.sh
-```
-
-Open [http://localhost:3000](http://localhost:3000). Switch personas at the top of the page.
-
-### Manual setup (step-by-step)
-
-```bash
-# Step 1: Build the MCP server
-cd mcp-server
-npm install
-npm run build       # compiles TypeScript → dist/, copies src/data/*.json → dist/data/
-
-# Step 2: Configure env vars
-cd ../web-app
-cp ../.env.example .env.local
-# Edit .env.local — paste your ANTHROPIC_API_KEY
-
-# Step 3: Start the web app
-npm install
-npm run dev
-```
-
-### Step 4 (Optional): Connect MCP to Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "grabcredit": {
-      "command": "node",
-      "args": ["/absolute/path/to/mcp-server/dist/index.js"]
-    }
-  }
-}
-```
-
-Restart Claude Desktop. You can now ask Claude: *"What's Priya Sharma's credit profile?"* and it will call the MCP tools directly.
-
-### Step 5: Run the test suite
-
-```bash
-cd mcp-server
-npm test
-```
-
-21 unit tests covering: all 5 persona tiers, credit limit interpolation, the confidence dampener (zero-transaction edge case), fraud flag boundaries (6/7/8-day account age rule, single-pattern combo), and factor weight integrity.
-
-### Step 6 (Optional): Test MCP server standalone
-
-```bash
-cd mcp-server
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
-```
-
-### Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | Yes (for narratives) | — | Claude API key for generating credit narratives |
-| `PAYU_MODE` | No | `mock` | `mock` for simulated PayU responses, `live` for sandbox API |
-| `PAYU_KEY` | Only if live | — | PayU sandbox merchant key |
-| `PAYU_SALT` | Only if live | — | PayU sandbox merchant salt |
-
----
-
 ## What the AI Can Do (MCP Tools)
 
 The server follows the MCP specification with stdio transport and newline-delimited JSON (NDJSON) framing.
@@ -313,126 +291,39 @@ Templates would be faster but they'd feel generic. The prompt feeds Claude the r
 
 ---
 
+## Edge Cases & Error Handling
+
+The scoring engine handles several non-obvious edge cases:
+
+- **Zero transactions**: Users with 0 transactions get `score: 0, tier: rejected` immediately — they never reach the dampener, which would otherwise pull them toward a middling score and a false "conditional" approval.
+- **Sparse data (< 3 transactions)**: A minimum-transactions guard (`MINIMUM_TRANSACTIONS_FOR_SCORING = 3`) rejects users with insufficient data before scoring begins.
+- **Confidence dampener**: For users with limited history, the engine applies `sqrt(min(txns, 200)/200) * sqrt(min(activeMonths, 12)/12)` to pull scores toward neutral. This prevents both false approvals (thin-file users getting high scores) and unfair rejections (new users being penalized too harshly).
+- **Dormant accounts**: Accounts > 90 days old with 0 transactions trigger a `[REVIEW]` fraud flag — distinct from "new account" fraud, this catches abandoned-then-reactivated accounts.
+- **7-day boundary precision**: The new-account fraud rule uses `< 7 days` (not `<= 7`), so an account exactly 7 days old passes. Tested with boundary cases at 6, 7, and 8 days.
+- **Category-adjusted returns**: A 15% return rate in Fashion (industry norm: 20%) is fine; the same rate in Food (norm: 3%) is a red flag. Returns are benchmarked per-category, not globally.
+
+---
+
 ## What I'd Build With More Time
 
-1. **Cohort-based scoring**: Cluster users by behavior similarity (k-means on the 5 factor scores), then use cohort default rates to calibrate individual scores. A user who looks like other users who defaulted should get a stricter assessment, regardless of their individual metrics.
+Listed by implementation priority — what would move the needle most for production readiness:
 
-2. **Real CIBIL integration as a validation layer**: Use the behavioral score as a fast pre-screen, then pull CIBIL for final underwriting on approved users. Compare behavioral vs. bureau scores over time to calibrate the model.
+1. **Real CIBIL integration as a validation layer** *(P0 — regulatory necessity)*: Use the behavioral score as a fast pre-screen, then pull CIBIL for final underwriting on approved users. Compare behavioral vs. bureau scores over time to calibrate the model.
 
-3. **Merchant-side analytics dashboard**: Show merchants their BNPL conversion rates segmented by user tier. "12% of your checkout users are pre-approved but only 4% chose EMI — here's how to surface the offer earlier."
+2. **Real-time fraud velocity on transaction stream** *(P0 — risk)*: The current fraud check runs at scoring time on historical data. In production, you'd want a streaming check that flags suspicious patterns as transactions happen, not after the fact.
 
-4. **Temporal risk scoring**: Weight recent transactions more heavily using exponential decay. A user who was great for 11 months but had a terrible last month should score differently than a consistently mediocre user — the model currently doesn't capture this nuance beyond the decline modifier.
+3. **Cohort-based scoring** *(P1 — model accuracy)*: Cluster users by behavior similarity (k-means on the 5 factor scores), then use cohort default rates to calibrate individual scores. A user who looks like other users who defaulted should get a stricter assessment, regardless of their individual metrics.
 
-5. **A/B testing framework for EMI presentation**: Test whether showing total cost vs. monthly amount first affects conversion. Test whether showing the AI narrative upfront vs. behind a "Why?" click matters. The current UI makes assumptions about information hierarchy that should be validated.
+4. **Temporal risk scoring** *(P1 — model accuracy)*: Weight recent transactions more heavily using exponential decay. A user who was great for 11 months but had a terrible last month should score differently than a consistently mediocre user — the model currently doesn't capture this nuance beyond the decline modifier.
 
-6. **Real-time fraud velocity on transaction stream**: The current fraud check runs at scoring time on historical data. In production, you'd want a streaming check that flags suspicious patterns as transactions happen, not after the fact.
+5. **Merchant-side analytics dashboard** *(P2 — growth)*: Show merchants their BNPL conversion rates segmented by user tier. "12% of your checkout users are pre-approved but only 4% chose EMI — here's how to surface the offer earlier."
 
----
-
-## Loom Walkthrough
-
-- [Part 1 — Business & Product Demo](https://www.loom.com/share/5b65211576e24302a653b4ea78705578) (5 min)
-- [Part 2 — Technical Architecture](https://www.loom.com/share/4e4d831e3b4f41c5a8a0b6ad578f3b9d) (5 min)
-
----
-
-## Tech Stack
-
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| MCP Server | TypeScript + `@modelcontextprotocol/sdk` | MCP SDK is TS-first; spec compliance matters |
-| Scoring Engine | TypeScript (same codebase) | No context-switching; scoring lives inside MCP |
-| Narrative Engine | Claude Sonnet 4 via `@anthropic-ai/sdk` | Real AI-generated text, not templates |
-| Web App | Next.js 16 + React 19 + Tailwind CSS 4 | Fast to build, server-side API routes, responsive |
-| Charts | Recharts | React-native charting, clean radar/bar/line charts |
-| Animations | Framer Motion | Smooth persona transitions and micro-interactions |
-| PayU Integration | Mock client + Live client (sandbox REST) | Works offline by default, real integration available |
-| Data Store | JSON files | No DB setup — this is a prototype. Data lives in `mcp-server/src/data/` |
+6. **A/B testing framework for EMI presentation** *(P2 — optimization)*: Test whether showing total cost vs. monthly amount first affects conversion. Test whether showing the AI narrative upfront vs. behind a "Why?" click matters.
 
 ---
 
 ## Data Structure
 
-All mock data lives in `mcp-server/src/data/`. The TypeScript interfaces are the canonical schema definition (`mcp-server/src/types.ts`).
+Full field-level schema for Transaction and User Profile types: **[docs/data-schema.md](docs/data-schema.md)**
 
-### Transaction
-
-One record per purchase event.
-
-| Field | Type | Valid Values / Range | Description |
-|-------|------|---------------------|-------------|
-| `transaction_id` | `string` | `"txn_00001"` … | Unique transaction identifier |
-| `user_id` | `string` | `"user_001"` … `"user_005"` | Links to User record |
-| `merchant_name` | `string` | e.g. `"Myntra"`, `"Zomato"` | Merchant display name |
-| `merchant_category` | `string` | `"Fashion"` \| `"Travel"` \| `"Food"` \| `"Electronics"` \| `"Health"` | One of 5 categories |
-| `subcategory` | `string` | e.g. `"Hotel Booking"`, `"Casual Wear"` | More specific product type |
-| `transaction_amount` | `number` | `200` … `80,000` (INR) | Gross transaction value in ₹ |
-| `coupon_used` | `boolean` | `true` \| `false` | Whether a GrabOn coupon was applied |
-| `coupon_discount_percent` | `number` | `0` … `40` | Discount applied (0 if no coupon) |
-| `payment_mode` | `string` | `"Credit Card"` \| `"UPI"` \| `"Debit Card"` \| `"NetBanking"` \| `"COD"` | Payment method used |
-| `return_flag` | `boolean` | `true` \| `false` | Whether the item was returned |
-| `refund_amount` | `number` | `0` … `transaction_amount` (INR) | Refund issued (0 if not returned) |
-| `timestamp` | `string` | ISO 8601 with IST offset | Transaction datetime |
-| `device_type` | `string` | `"mobile"` \| `"desktop"` \| `"tablet"` | Device used at purchase |
-
-**Example:**
-```json
-{
-  "transaction_id": "txn_00001",
-  "user_id": "user_001",
-  "merchant_name": "EaseMyTrip",
-  "merchant_category": "Travel",
-  "subcategory": "Hotel Booking",
-  "transaction_amount": 1035,
-  "coupon_used": true,
-  "coupon_discount_percent": 21,
-  "payment_mode": "UPI",
-  "return_flag": false,
-  "refund_amount": 0,
-  "timestamp": "2024-08-08T16:49:32+05:30",
-  "device_type": "mobile"
-}
-```
-
-### User Profile
-
-One record per user — pre-aggregated from transactions for scoring efficiency.
-
-| Field | Type | Valid Values / Range | Description |
-|-------|------|---------------------|-------------|
-| `user_id` | `string` | `"user_001"` … `"user_005"` | Primary key |
-| `name` | `string` | e.g. `"Priya Sharma"` | Display name |
-| `registration_date` | `string` | ISO 8601 date | When the GrabOn account was created |
-| `email` | `string` | valid email | Contact email |
-| `phone` | `string` | `"+91-XXXXXXXXXX"` | Indian mobile number |
-| `total_transactions` | `number` | `2` … `214` | Lifetime transaction count |
-| `total_gmv` | `number` | INR | Lifetime gross merchandise value |
-| `active_months` | `number` | `1` … `18` | Months with at least one transaction |
-| `categories_shopped` | `string[]` | subset of 5 categories | Distinct categories ever purchased in |
-| `avg_monthly_spend` | `number` | INR | Mean monthly GMV across active months |
-| `deal_redemption_rate` | `number` | `0.0` … `1.0` | Fraction of transactions where a coupon was used |
-| `return_rate` | `number` | `0.0` … `0.50` | Fraction of orders returned |
-| `payment_mode_distribution` | `Record<string, number>` | values sum to 1.0 | Share of GMV by payment mode |
-| `gmv_trend_12m` | `number[]` | 12 elements, INR | Monthly GMV for the last 12 months (oldest first; 0 = no activity that month) |
-| `favorite_merchants` | `string[]` | top 3 by transaction count | Merchants with most repeat purchases |
-| `last_transaction_date` | `string` | ISO 8601 date | Date of most recent transaction |
-
-**Example:**
-```json
-{
-  "user_id": "user_001",
-  "name": "Priya Sharma",
-  "registration_date": "2024-08-15",
-  "total_transactions": 214,
-  "total_gmv": 85200,
-  "active_months": 18,
-  "categories_shopped": ["Fashion", "Travel", "Food", "Electronics", "Health"],
-  "avg_monthly_spend": 4733,
-  "deal_redemption_rate": 0.55,
-  "return_rate": 0.02,
-  "payment_mode_distribution": { "Credit Card": 0.6, "UPI": 0.3, "Debit Card": 0.1 },
-  "gmv_trend_12m": [3800, 4100, 4200, 4400, 4300, 4600, 4700, 4900, 5000, 5200, 5400, 5600],
-  "favorite_merchants": ["Myntra", "MakeMyTrip", "Zomato"],
-  "last_transaction_date": "2026-02-24"
-}
-```
+Data lives in `mcp-server/src/data/`. TypeScript interfaces in `mcp-server/src/types.ts`.
