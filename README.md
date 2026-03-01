@@ -81,13 +81,13 @@ cp .env.example web-app/.env.local
 ./scripts/demo.sh
 ```
 
-**Windows (Command Prompt):**
-```bat
+**Windows (PowerShell):**
+```powershell
 git clone https://github.com/aayushnamdev/grabcredit-bnpl.git
 cd grabcredit-bnpl
 copy .env.example web-app\.env.local
-REM Edit web-app\.env.local — add your ANTHROPIC_API_KEY
-scripts\demo.bat
+# Edit web-app\.env.local — add your ANTHROPIC_API_KEY
+.\scripts\demo.bat
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Switch personas at the top of the page.
