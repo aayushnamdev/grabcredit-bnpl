@@ -91,6 +91,8 @@ export async function confirmEmiPlan(
   const txnid = `GC_${args.user_id}_${Date.now()}`;
   const productinfo = args.merchant_name ?? 'GrabOn Purchase';
 
+  const baseUrl = process.env.PAYU_RETURN_URL ?? 'https://grabcredit-bnpl.vercel.app/payment/callback';
+
   const req: PayUEmiCreateRequest & { _monthlyRate: number; _processingFee: number } = {
     key: process.env.PAYU_KEY ?? 'test_key',
     txnid,
@@ -101,6 +103,8 @@ export async function confirmEmiPlan(
     phone: profile.phone,
     emi_tenure: args.selected_months,
     payment_type: 'LAZYPAY_EMI',
+    surl: baseUrl,
+    furl: baseUrl,
     // Internal fields consumed by MockPayUClient
     _monthlyRate: config.monthlyRate,
     _processingFee: config.processingFee,

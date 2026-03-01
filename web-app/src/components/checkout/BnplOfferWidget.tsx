@@ -174,16 +174,39 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
   const nextTierGap = getNextTierGap(score.score);
   const isLowConfidence = score.dataConfidence < 0.4;
 
+  const submitToPayU = (result: PayUEmiCreateResponse) => {
+    if (!result.payu_redirect_url || !result.payu_params) return;
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = result.payu_redirect_url;
+    Object.entries(result.payu_params).forEach(([k, v]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = k;
+      input.value = v;
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  };
+
   const handlePay = async () => {
     if (!selectedMonths) return;
     setIsProcessing(true);
     try {
       const result = await confirmEmi(amount, selectedMonths);
-      setConfirmResult(result);
+      if (!result) { setIsProcessing(false); return; }
+      if (result.status === 'pending' && result.payu_redirect_url) {
+        // Live mode: redirect browser to PayU sandbox payment page
+        submitToPayU(result);
+        // Keep isProcessing=true — the page will navigate away
+      } else {
+        setConfirmResult(result);
+        setIsProcessing(false);
+      }
     } catch {
-      // silently handle
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   /* ══════════════════════════════════════════════
@@ -213,9 +236,14 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
           <p className="text-brand-700 text-sm text-center mb-1">
             EMI of ₹{confirmResult.monthly_emi.toLocaleString()}/mo set up via PayU
           </p>
-          <p className="text-[10px] text-brand-600 text-center mb-5 font-medium">
+          <p className="text-[10px] text-brand-600 text-center mb-2 font-medium">
             Poonawalla Fincorp &middot; LazyPay
           </p>
+          <div className="flex justify-center mb-4">
+            <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${confirmResult.mode === 'live' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+              {confirmResult.mode === 'live' ? '● LIVE — PayU Sandbox' : '● MOCK — Simulated'}
+            </span>
+          </div>
         </motion.div>
 
         <motion.div

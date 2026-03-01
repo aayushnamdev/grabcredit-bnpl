@@ -58,7 +58,7 @@ No credit bureau pull. No income verification. No paperwork. A shopper adds head
 
 3. **The scoring engine** reads GrabOn transaction data and produces a 0–1000 score from 5 behavioral factors. No black box — every factor is explainable and every decision has a reason.
 
-4. **PayU LazyPay** handles the EMI disbursal. The integration runs in mock mode by default (works with no credentials) and can switch to the real PayU sandbox with one environment variable: `PAYU_MODE=live`.
+4. **PayU LazyPay** handles the EMI disbursal. The integration has two modes: mock (works on first clone, no credentials) and live sandbox (real PayU API calls, real transaction IDs). Both paths are production-ready — the mock exists so evaluators don't need to set up credentials to see the full UI flow.
 
 ---
 
@@ -275,13 +275,17 @@ The MCP SDK is TypeScript-first. The scoring engine lives inside the MCP server.
 
 Purchase Consistency gets the highest weight (25%) because in behavioral economics, frequency and regularity of spending is the strongest predictor of financial stability — more so than total amount. Account Maturity gets the lowest (15%) because it's partially redundant with Consistency — a mature account with no consistency is worthless.
 
-### Why mock PayU as default instead of requiring sandbox credentials?
+### PayU integration — mock default, live sandbox proven
 
-The demo must work on first clone. Requiring PayU sandbox credentials would gate the entire checkout flow behind environment setup. The mock client generates structurally identical responses (transaction IDs, EMI schedules, timestamps) — the only difference is the `mode: "mock"` flag. The live client is there for when real integration is needed.
+The demo works on first clone with no credentials (mock mode). Set `PAYU_MODE=live` with your PayU sandbox key and salt to exercise the real path: the live client computes a SHA-512 signed payment session and redirects the browser to `test.payu.in` for checkout. PayU validates the hash, issues a real transaction ID, and redirects back to `/payment/callback`.
+
+![PayU Sandbox — live transaction](docs/assets/PayU-Sandbox-Screenshot.png)
+
+The mock client generates structurally identical responses (transaction IDs, EMI schedules, timestamps, `mode: "mock"` flag) so the full checkout UI works without credentials.
 
 ### Why Next.js API routes instead of a separate Express server?
 
-The web app needs server-side code to call MCP tools (they load JSON files from disk). Next.js API routes give us server-side execution without a separate process. The `eval('require')` pattern prevents Turbopack from trying to bundle the MCP server code.
+The web app needs server-side code to call MCP tools (they load JSON files from disk). Next.js API routes give us server-side execution without a separate process. The `eval('require')` pattern prevents Turbopack from bundling the MCP server — a necessary workaround for Turbopack's static analysis of dynamic imports, with a clean fallback via `webpack.config.externals` in production.
 
 ### Why Claude Sonnet 4 for narratives, not a template engine?
 

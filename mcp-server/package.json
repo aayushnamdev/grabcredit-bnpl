@@ -6,15 +6,25 @@
     "start": "node dist/index.js",
     "dev": "npx ts-node src/index.ts",
     "verify": "npx ts-node src/scoring/verify.ts",
+    "test": "jest --verbose",
     "test:narratives": "npx ts-node src/narrative/testNarratives.ts"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "moduleFileExtensions": ["ts", "js"],
+    "testMatch": ["**/src/__tests__/**/*.test.ts"]
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9",
-    "@types/node": "^20"
+    "typescript": "^5.4"
   }
 }

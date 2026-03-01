@@ -75,7 +75,7 @@ export interface EmiInstallment {
 }
 
 export interface PayUEmiCreateResponse {
-  status: 'success' | 'failure';
+  status: 'success' | 'failure' | 'pending';
   txnid: string;
   mihpayid: string;
   emi_plan_id: string;
@@ -90,6 +90,9 @@ export interface PayUEmiCreateResponse {
   timestamp: string;
   error_code?: string;
   error_message?: string;
+  // Live mode only: params to POST to PayU sandbox payment page
+  payu_redirect_url?: string;
+  payu_params?: Record<string, string>;
 }
 
 export interface PlatformAverages {

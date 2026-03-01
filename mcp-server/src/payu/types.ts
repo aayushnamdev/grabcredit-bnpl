@@ -11,6 +11,8 @@ export interface PayUEmiCreateRequest {
   emi_tenure: number;    // selected months
   payment_type: 'LAZYPAY_EMI';
   hash?: string;         // sha512 hash (live mode only)
+  surl?: string;         // PayU success redirect URL (live mode)
+  furl?: string;         // PayU failure redirect URL (live mode)
 }
 
 export interface EmiInstallment {
@@ -22,7 +24,7 @@ export interface EmiInstallment {
 }
 
 export interface PayUEmiCreateResponse {
-  status: 'success' | 'failure';
+  status: 'success' | 'failure' | 'pending';
   txnid: string;         // our txnid echoed back
   mihpayid: string;      // PayU internal ID (e.g. "MIHU403259283752")
   emi_plan_id: string;   // e.g. "EMIPLAN_20260226_A3F9"
@@ -37,6 +39,9 @@ export interface PayUEmiCreateResponse {
   timestamp: string;     // ISO-8601
   error_code?: string;
   error_message?: string;
+  // Live mode only: params for browser-side form POST to PayU sandbox
+  payu_redirect_url?: string;
+  payu_params?: Record<string, string>;
 }
 
 // --- Internal option shapes (for get_payu_emi_options) ---
