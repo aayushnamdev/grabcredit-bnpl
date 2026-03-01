@@ -221,7 +221,16 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 Restart Claude Desktop. You can now ask Claude: *"What's Priya Sharma's credit profile?"* and it will call the MCP tools directly.
 
-### Step 5 (Optional): Test MCP server standalone
+### Step 5: Run the test suite
+
+```bash
+cd mcp-server
+npm test
+```
+
+21 unit tests covering: all 5 persona tiers, credit limit interpolation, the confidence dampener (zero-transaction edge case), fraud flag boundaries (6/7/8-day account age rule, single-pattern combo), and factor weight integrity.
+
+### Step 6 (Optional): Test MCP server standalone
 
 ```bash
 cd mcp-server
@@ -262,6 +271,17 @@ The server follows the MCP specification with stdio transport and newline-delimi
 |----------|-----|-------------|
 | Transaction Schema | `transaction://schema` | JSON Schema for the transaction data model |
 | Merchant Catalog | `merchant://catalog` | All merchants grouped by category |
+
+**4 Prompts** (pre-built templates for Claude Desktop — `prompts/list` + `prompts/get`):
+
+| Prompt | Arguments | What it does |
+|--------|-----------|--------------|
+| `full_credit_assessment` | `user_id`, `purchase_amount?` | Chains all tools: profile → fraud → score → narrative → EMI options |
+| `compare_risk_profiles` | `user_id_a`, `user_id_b` | Side-by-side credit risk comparison with verdict |
+| `improvement_roadmap` | `user_id` | Specific, numbered steps to reach the next credit tier |
+| `fraud_deep_dive` | `user_id` | Flag-by-flag fraud analysis with recommended action |
+
+In Claude Desktop you can say: *"Run a full credit assessment for user_003"* and Claude will chain all the right tools automatically.
 
 ---
 
