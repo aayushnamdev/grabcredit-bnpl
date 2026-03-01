@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ShieldCheck,
   CreditCard,
@@ -87,8 +87,34 @@ function TierPill({ score }: { score: { score: number; tier: string; rateTier: n
 
 export function ProductCheckout() {
   const [activeTab, setActiveTab] = useState<"grabcredit" | "upi" | "card">("grabcredit");
-  const { state } = usePersonaContext();
+  const [isPayingFull, setIsPayingFull] = useState(false);
+  const [fullPayDone, setFullPayDone] = useState(false);
+  const { state, payFull } = usePersonaContext();
   const PRODUCT_AMOUNT = 18499;
+
+  // Reset on persona switch
+  useEffect(() => { setFullPayDone(false); setIsPayingFull(false); }, [state.personaId]);
+
+  const handleTotalPay = async () => {
+    setIsPayingFull(true);
+    const result = await payFull(PRODUCT_AMOUNT);
+    setIsPayingFull(false);
+    if (!result) return;
+    if (result.status === "pending" && result.payu_redirect_url && result.payu_params) {
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = result.payu_redirect_url;
+      Object.entries(result.payu_params).forEach(([k, v]) => {
+        const input = document.createElement("input");
+        input.type = "hidden"; input.name = k; input.value = v;
+        form.appendChild(input);
+      });
+      document.body.appendChild(form);
+      form.submit();
+    } else if (result.status === "success") {
+      setFullPayDone(true);
+    }
+  };
 
   // Dynamic BNPL subtitle based on tier
   const getBnplSubtitle = () => {

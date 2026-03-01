@@ -267,85 +267,106 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-lg p-4 border border-brand-100 space-y-2.5 text-sm"
-        >
-          {[
-            { label: "Transaction ID", value: confirmResult.txnid, mono: true },
-            { label: "PayU ID", value: confirmResult.mihpayid, mono: true },
-            { label: "EMI Plan ID", value: confirmResult.emi_plan_id, mono: true },
-            { label: "Tenure", value: `${confirmResult.emi_tenure} months`, mono: false },
-            { label: "Total Cost", value: `₹${confirmResult.total_cost.toLocaleString()}`, mono: false },
-          ].map((row) => (
-            <div key={row.label} className="flex justify-between items-center">
-              <span className="text-text-muted">{row.label}</span>
-              <span className={`${row.mono ? "font-mono text-xs" : "font-semibold"} text-text-primary`}>
-                {row.value}
-              </span>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* EMI Schedule */}
-        {confirmResult.schedule && confirmResult.schedule.length > 0 && (
+        {confirmResult.emi_tenure === 1 ? (
+          /* ── Full payment receipt ── */
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-lg p-4 border border-brand-100 space-y-2.5 text-sm"
           >
-            <button
-              onClick={() => setShowSchedulePreview(!showSchedulePreview)}
-              className="w-full flex items-center justify-between text-xs font-bold text-text-muted uppercase tracking-wider mb-2 hover:text-text-secondary transition-colors"
-            >
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> EMI Schedule ({confirmResult.schedule.length} installments)
-              </span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSchedulePreview ? "rotate-180" : ""}`} />
-            </button>
-            <AnimatePresence>
-              {showSchedulePreview && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="bg-white rounded-lg border border-brand-100 overflow-hidden">
-                    <div className="grid grid-cols-4 gap-1 text-[10px] font-bold uppercase text-text-muted bg-gray-50 px-3 py-2">
-                      <span>#</span>
-                      <span>Due Date</span>
-                      <span className="text-right">Amount</span>
-                      <span className="text-right">Interest</span>
-                    </div>
-                    {confirmResult.schedule.map((inst) => (
-                      <div
-                        key={inst.installment}
-                        className="grid grid-cols-4 gap-1 text-xs px-3 py-1.5 border-t border-gray-50"
-                      >
-                        <span className="text-text-muted">{inst.installment}</span>
-                        <span className="text-text-primary">{inst.due_date}</span>
-                        <span className="text-right font-medium text-text-primary">
-                          ₹{inst.amount.toLocaleString()}
-                        </span>
-                        <span className="text-right text-text-muted">₹{inst.interest.toLocaleString()}</span>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {[
+              { label: "Transaction ID", value: confirmResult.txnid, mono: true },
+              { label: "Payment ID", value: confirmResult.mihpayid, mono: true },
+              { label: "Type", value: "Full Payment", mono: false },
+              { label: "Amount", value: `₹${confirmResult.total_amount.toLocaleString()}`, mono: false },
+            ].map((row) => (
+              <div key={row.label} className="flex justify-between items-center">
+                <span className="text-text-muted">{row.label}</span>
+                <span className={`${row.mono ? "font-mono text-xs" : "font-semibold"} text-text-primary`}>
+                  {row.value}
+                </span>
+              </div>
+            ))}
           </motion.div>
+        ) : (
+          /* ── EMI receipt ── */
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white rounded-lg p-4 border border-brand-100 space-y-2.5 text-sm"
+            >
+              {[
+                { label: "Transaction ID", value: confirmResult.txnid, mono: true },
+                { label: "PayU ID", value: confirmResult.mihpayid, mono: true },
+                { label: "EMI Plan ID", value: confirmResult.emi_plan_id, mono: true },
+                { label: "Tenure", value: `${confirmResult.emi_tenure} months`, mono: false },
+                { label: "Total Cost", value: `₹${confirmResult.total_cost.toLocaleString()}`, mono: false },
+              ].map((row) => (
+                <div key={row.label} className="flex justify-between items-center">
+                  <span className="text-text-muted">{row.label}</span>
+                  <span className={`${row.mono ? "font-mono text-xs" : "font-semibold"} text-text-primary`}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* EMI Schedule */}
+            {confirmResult.schedule && confirmResult.schedule.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="mt-4"
+              >
+                <button
+                  onClick={() => setShowSchedulePreview(!showSchedulePreview)}
+                  className="w-full flex items-center justify-between text-xs font-bold text-text-muted uppercase tracking-wider mb-2 hover:text-text-secondary transition-colors"
+                >
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5" /> EMI Schedule ({confirmResult.schedule.length} installments)
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showSchedulePreview ? "rotate-180" : ""}`} />
+                </button>
+                <AnimatePresence>
+                  {showSchedulePreview && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="bg-white rounded-lg border border-brand-100 overflow-hidden">
+                        <div className="grid grid-cols-4 gap-1 text-[10px] font-bold uppercase text-text-muted bg-gray-50 px-3 py-2">
+                          <span>#</span><span>Due Date</span>
+                          <span className="text-right">Amount</span>
+                          <span className="text-right">Interest</span>
+                        </div>
+                        {confirmResult.schedule.map((inst) => (
+                          <div key={inst.installment} className="grid grid-cols-4 gap-1 text-xs px-3 py-1.5 border-t border-gray-50">
+                            <span className="text-text-muted">{inst.installment}</span>
+                            <span className="text-text-primary">{inst.due_date}</span>
+                            <span className="text-right font-medium text-text-primary">₹{inst.amount.toLocaleString()}</span>
+                            <span className="text-right text-text-muted">₹{inst.interest.toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+          </>
         )}
 
         <button
           onClick={() => setConfirmResult(null)}
           className="mt-4 text-brand-600 text-sm font-semibold hover:underline w-full text-center"
         >
-          Back to EMI options
+          {confirmResult.emi_tenure === 1 ? "Done" : "Back to EMI options"}
         </button>
       </motion.div>
     );
