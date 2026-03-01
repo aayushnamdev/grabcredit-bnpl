@@ -5,8 +5,8 @@
   "description": "AI-powered BNPL eligibility engine for GrabOn, built with MCP + Claude + PayU LazyPay",
   "scripts": {
     "setup": "cd mcp-server && npm install && npm run build && cd ../web-app && npm install",
-    "dev": "test -d mcp-server/dist || (cd mcp-server && npm install && npm run build) && cd web-app && npm run dev",
-    "build:mcp": "cd mcp-server && npm run build",
+    "dev": "node -e \"require('fs').existsSync('mcp-server/dist')||process.exit(1)\" || npm run build:mcp && cd web-app && npm run dev",
+    "build:mcp": "cd mcp-server && npm install && npm run build",
     "typecheck": "cd mcp-server && npx tsc --noEmit && cd ../web-app && npx tsc --noEmit"
   },
   "engines": {
