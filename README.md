@@ -70,18 +70,24 @@ No credit bureau pull. No income verification. No paperwork. A shopper adds head
 - **Node.js** ≥ 18
 - **Anthropic API key** — for Claude-powered narratives ([get one here](https://console.anthropic.com/settings/keys))
 
-### Quick start (one command)
+### Quick start
 
+**Mac / Linux:**
 ```bash
 git clone https://github.com/aayushnamdev/grabcredit-bnpl.git
 cd grabcredit-bnpl
-
-# Set your API key
 cp .env.example web-app/.env.local
-# Edit web-app/.env.local and add your ANTHROPIC_API_KEY
-
-# Install, build, and launch
+# Edit web-app/.env.local — add your ANTHROPIC_API_KEY
 ./scripts/demo.sh
+```
+
+**Windows (Command Prompt):**
+```bat
+git clone https://github.com/aayushnamdev/grabcredit-bnpl.git
+cd grabcredit-bnpl
+copy .env.example web-app\.env.local
+REM Edit web-app\.env.local — add your ANTHROPIC_API_KEY
+scripts\demo.bat
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Switch personas at the top of the page.
@@ -96,7 +102,7 @@ npm run build       # compiles TypeScript → dist/, copies src/data/*.json → 
 
 # Step 2: Configure env vars
 cd ../web-app
-cp ../.env.example .env.local
+cp ../.env.example .env.local   # Windows: copy ..\\.env.example .env.local
 # Edit .env.local — paste your ANTHROPIC_API_KEY
 
 # Step 3: Start the web app
