@@ -175,7 +175,13 @@ export function ProductCheckout() {
                   exit={{ height: 0, opacity: 0 }}
                   className="px-4 sm:px-5 pb-4 sm:pb-5 overflow-hidden"
                 >
-                  <BnplOfferWidget amount={PRODUCT_AMOUNT} />
+                  <BnplOfferWidget
+                    amount={PRODUCT_AMOUNT}
+                    onSelectAlternative={() => {
+                      setActiveTab("upi");
+                      document.getElementById("upi-option")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -183,6 +189,7 @@ export function ProductCheckout() {
 
           {/* UPI Option */}
           <div
+            id="upi-option"
             className={`card p-4 sm:p-5 flex items-center justify-between transition-all duration-300 ${
               activeTab === "upi"
                 ? "border-l-4 border-l-text-primary shadow-md"

@@ -22,6 +22,7 @@ import type { EmiOption, PayUEmiCreateResponse } from "@/types/api";
 
 interface BnplOfferWidgetProps {
   amount: number;
+  onSelectAlternative?: () => void;
 }
 
 /** Return the first `count` complete sentences from a block of text. */
@@ -95,7 +96,7 @@ const TIER_CONFIG = {
 
 type ApprovedTier = keyof typeof TIER_CONFIG;
 
-export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
+export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidgetProps) {
   const { state, fetchEmiOptions, confirmEmi } = usePersonaContext();
   const { score, emiOptions, narrative, isNarrativeLoading } = state;
 
@@ -747,7 +748,10 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
               )}
 
               <div className="px-4 pb-5 text-center">
-                <button className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md">
+                <button
+                  onClick={onSelectAlternative}
+                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
+                >
                   Pay Full Amount (₹{amount.toLocaleString()})
                 </button>
               </div>
@@ -810,7 +814,10 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
               </div>
 
               <div className="px-4 pb-5 text-center">
-                <button className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md">
+                <button
+                  onClick={onSelectAlternative}
+                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
+                >
                   Select Alternative Payment
                 </button>
               </div>
