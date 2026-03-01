@@ -15,7 +15,6 @@ import {
   TrendingUp,
   ShieldCheck,
   Clock,
-  AlertTriangle,
   Info,
 } from "lucide-react";
 import { Skeleton, SkeletonText } from "@/components/ui/Skeleton";
@@ -39,32 +38,6 @@ function safeNarrative(narrative: string | null | undefined): string | null {
 }
 
 /* ── Edge-case helpers ── */
-
-/** Parse a raw fraud flag string into a severity badge + clean message. */
-function parseFlag(flag: string): { badge: string; badgeColor: string; text: string } {
-  const match = flag.match(/^\[([^\]]+)\]\s*/);
-  if (!match) return { badge: '', badgeColor: '', text: flag };
-  const prefix = match[1];
-  const text = flag.slice(match[0].length);
-  const map: Record<string, { badge: string; badgeColor: string }> = {
-    'AUTO-REJECT': { badge: 'Auto-Rejected', badgeColor: 'bg-danger-100 text-danger-700 border-danger-200' },
-    'MONITOR':     { badge: 'Monitoring',    badgeColor: 'bg-amber-100 text-amber-700 border-amber-200' },
-    'REVIEW':      { badge: 'Under Review',  badgeColor: 'bg-orange-100 text-orange-700 border-orange-200' },
-  };
-  const mapped = map[prefix] ?? { badge: prefix, badgeColor: 'bg-gray-100 text-gray-600 border-gray-200' };
-  return { ...mapped, text };
-}
-
-/** Parse the new-account fraud flag and return days remaining until BNPL unlocks (7-day rule). */
-function getDaysUntilBnplUnlock(flags: string[], registrationDate: string | undefined): number | null {
-  const hasNewAccountFlag = flags.some(f => f.toLowerCase().includes('new account'));
-  if (!hasNewAccountFlag || !registrationDate) return null;
-  const regDate = new Date(registrationDate);
-  const now = new Date();
-  const daysSinceReg = Math.floor((now.getTime() - regDate.getTime()) / (1000 * 60 * 60 * 24));
-  const remaining = 7 - daysSinceReg;
-  return remaining > 0 ? remaining : 0;
-}
 
 /** Map a numeric score to the points needed to reach the next tier. */
 function getNextTierGap(score: number): { nextTier: string; pointsNeeded: number; rateImprovement: string } | null {
@@ -124,7 +97,7 @@ type ApprovedTier = keyof typeof TIER_CONFIG;
 
 export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
   const { state, fetchEmiOptions, confirmEmi } = usePersonaContext();
-  const { score, profile, emiOptions, narrative, isNarrativeLoading } = state;
+  const { score, emiOptions, narrative, isNarrativeLoading } = state;
 
   const [selectedMonths, setSelectedMonths] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -198,9 +171,6 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
   const tier = isApproved ? TIER_CONFIG[score.tier as ApprovedTier] : null;
 
   // Edge case helpers
-  const daysUntilUnlock = isFraud
-    ? getDaysUntilBnplUnlock(score.fraudFlags.flags, profile?.registration_date)
-    : null;
   const nextTierGap = getNextTierGap(score.score);
   const isLowConfidence = score.dataConfidence < 0.4;
 
@@ -776,60 +746,14 @@ export function BnplOfferWidget({ amount }: BnplOfferWidgetProps) {
                 </p>
               </div>
 
-              {/* New-account BNPL countdown — 7-day rule */}
-              {daysUntilUnlock !== null && (
-                <div className="px-4 pt-4">
-                  <div className="flex items-center gap-3 p-4 rounded-xl bg-white border border-red-100">
-                    <div className="shrink-0 w-12 h-12 rounded-full bg-danger-50 border-2 border-danger-200 flex flex-col items-center justify-center">
-                      {daysUntilUnlock === 0 ? (
-                        <span className="text-lg font-extrabold text-brand-600 leading-none">✓</span>
-                      ) : (
-                        <>
-                          <span className="text-xl font-extrabold text-danger-600 leading-none">{daysUntilUnlock}</span>
-                          <span className="text-[7px] font-bold text-danger-400 uppercase tracking-wide leading-none mt-0.5">{daysUntilUnlock === 1 ? "day" : "days"}</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-danger-800">
-                        {daysUntilUnlock === 0
-                          ? "BNPL unlocks today — re-apply shortly"
-                          : `BNPL available in ${daysUntilUnlock} day${daysUntilUnlock === 1 ? "" : "s"}`}
-                      </p>
-                      <p className="text-[11px] text-danger-700 mt-0.5 leading-relaxed">
-                        New accounts require 7 days of platform activity before BNPL access is granted.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Fraud flags */}
-              {score.fraudFlags && score.fraudFlags.flags && score.fraudFlags.flags.length > 0 && (
-                <div className="px-4 pt-4">
-                  <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3 text-danger-500" /> Issues Detected
-                  </p>
-                  <div className="space-y-1.5 mb-3">
-                    {score.fraudFlags.flags.map((flag: string, i: number) => {
-                      const { badge, badgeColor, text } = parseFlag(flag);
-                      return (
-                        <div
-                          key={i}
-                          className="flex items-start gap-2 text-xs text-danger-700 bg-danger-50 rounded-lg px-3 py-2 border border-red-100"
-                        >
-                          {badge && (
-                            <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded border ${badgeColor}`}>
-                              {badge}
-                            </span>
-                          )}
-                          <span className="leading-relaxed">{text || flag}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+              {/*
+                Fraud flags and countdown are intentionally NOT shown in the
+                customer-facing checkout widget. Revealing specific triggers
+                (account age gates, pattern rules, category flags) creates a
+                feedback loop that lets bad actors reverse-engineer the
+                detection logic. The scoring dashboard (internal view) still
+                displays all flags for evaluator / analyst review.
+              */}
 
               {/* Narrative for fraud */}
               <div className="px-4 pt-1 pb-4">
