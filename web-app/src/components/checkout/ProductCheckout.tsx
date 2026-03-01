@@ -298,13 +298,23 @@ export function ProductCheckout() {
               </div>
             </div>
 
-            {/* Total */}
-            <div className="bg-gradient-to-r from-text-primary to-gray-800 rounded-xl p-4 sm:p-5 flex items-center justify-between text-white shadow-xl shadow-black/10 mt-2">
+            {/* Total — acts as a Pay Now shortcut */}
+            <button
+              onClick={() => {
+                setActiveTab("grabcredit");
+                setTimeout(() => {
+                  const btn = document.getElementById("bnpl-pay-btn") as HTMLButtonElement | null;
+                  btn?.scrollIntoView({ behavior: "smooth", block: "center" });
+                  btn?.click();
+                }, 350);
+              }}
+              className="w-full mt-2 bg-gradient-to-r from-text-primary to-gray-800 rounded-xl p-4 sm:p-5 flex items-center justify-between text-white shadow-xl shadow-black/10 hover:from-gray-800 hover:to-gray-700 active:scale-[0.99] transition-all cursor-pointer"
+            >
               <span className="font-medium text-white/90 text-sm">Total to Pay</span>
               <span className="text-xl sm:text-2xl font-extrabold tracking-tight">
                 ₹{PRODUCT_AMOUNT.toLocaleString()}
               </span>
-            </div>
+            </button>
 
             {/* Trust Badges */}
             <div className="mt-5 sm:mt-6 flex flex-col gap-1.5 text-center">

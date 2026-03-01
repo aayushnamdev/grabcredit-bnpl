@@ -607,6 +607,7 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
                         </div>
 
                         <button
+                          id="bnpl-pay-btn"
                           onClick={handlePay}
                           disabled={isProcessing}
                           className={`w-full mt-5 py-3.5 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg ${
@@ -769,6 +770,7 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
 
               <div className="px-4 pb-5 text-center">
                 <button
+                  id="bnpl-pay-btn"
                   onClick={handlePayFull}
                   disabled={isPayingFull}
                   className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 disabled:opacity-60 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
