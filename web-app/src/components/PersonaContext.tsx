@@ -53,6 +53,7 @@ interface PersonaContextType {
   switchPersona: (id: string) => void;
   fetchEmiOptions: (amount: number, merchantName?: string) => Promise<PayUEmiOptionsResult | null>;
   confirmEmi: (amount: number, months: number, merchantName?: string) => Promise<PayUEmiCreateResponse | null>;
+  payFull: (amount: number, merchantName?: string) => Promise<PayUEmiCreateResponse | null>;
 }
 
 const PersonaContext = createContext<PersonaContextType | undefined>(undefined);
@@ -247,6 +248,24 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
     [state.personaId]
   );
 
+  const payFull = useCallback(
+    async (amount: number, merchantName?: string): Promise<PayUEmiCreateResponse | null> => {
+      const backendId = PERSONA_MAP[state.personaId];
+      if (!backendId) return null;
+      try {
+        const res = await fetch("/api/pay-full", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: backendId, purchase_amount: amount, merchant_name: merchantName }),
+        });
+        return await res.json();
+      } catch {
+        return null;
+      }
+    },
+    [state.personaId]
+  );
+
   const activeMeta = PERSONAS.find((p) => p.id === state.personaId) || PERSONAS[0];
 
   return (
@@ -258,6 +277,7 @@ export function PersonaProvider({ children }: { children: ReactNode }) {
         switchPersona,
         fetchEmiOptions,
         confirmEmi,
+        payFull,
       }}
     >
       {children}

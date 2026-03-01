@@ -97,11 +97,12 @@ const TIER_CONFIG = {
 type ApprovedTier = keyof typeof TIER_CONFIG;
 
 export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidgetProps) {
-  const { state, fetchEmiOptions, confirmEmi } = usePersonaContext();
+  const { state, fetchEmiOptions, confirmEmi, payFull } = usePersonaContext();
   const { score, emiOptions, narrative, isNarrativeLoading } = state;
 
   const [selectedMonths, setSelectedMonths] = useState<number | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPayingFull, setIsPayingFull] = useState(false);
   const [confirmResult, setConfirmResult] = useState<PayUEmiCreateResponse | null>(null);
   const [emiLoading, setEmiLoading] = useState(false);
   const [showSchedulePreview, setShowSchedulePreview] = useState(false);
@@ -129,6 +130,7 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
   // Reset on persona switch
   useEffect(() => {
     setIsProcessing(false);
+    setIsPayingFull(false);
     setConfirmResult(null);
     setSelectedMonths(null);
     setShowSchedulePreview(false);
@@ -210,6 +212,22 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
     }
   };
 
+  const handlePayFull = async () => {
+    setIsPayingFull(true);
+    try {
+      const result = await payFull(amount);
+      if (!result) { setIsPayingFull(false); return; }
+      if (result.status === 'pending' && result.payu_redirect_url) {
+        submitToPayU(result);
+      } else {
+        setConfirmResult(result);
+        setIsPayingFull(false);
+      }
+    } catch {
+      setIsPayingFull(false);
+    }
+  };
+
   /* ══════════════════════════════════════════════
      SUCCESS STATE — PayU confirmation
      ══════════════════════════════════════════════ */
@@ -235,7 +253,9 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <h3 className="text-lg font-bold text-brand-900 mb-1 text-center">Payment Confirmed!</h3>
           <p className="text-brand-700 text-sm text-center mb-1">
-            EMI of ₹{confirmResult.monthly_emi.toLocaleString()}/mo set up via PayU
+            {confirmResult.emi_tenure === 1
+              ? `₹${confirmResult.monthly_emi.toLocaleString()} paid in full via PayU`
+              : `EMI of ₹${confirmResult.monthly_emi.toLocaleString()}/mo set up via PayU`}
           </p>
           <p className="text-[10px] text-brand-600 text-center mb-2 font-medium">
             Poonawalla Fincorp &middot; LazyPay
@@ -749,10 +769,18 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
 
               <div className="px-4 pb-5 text-center">
                 <button
-                  onClick={onSelectAlternative}
-                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
+                  onClick={handlePayFull}
+                  disabled={isPayingFull}
+                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 disabled:opacity-60 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
                 >
-                  Pay Full Amount (₹{amount.toLocaleString()})
+                  {isPayingFull ? (
+                    <span className="flex items-center gap-2">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                      Processing…
+                    </span>
+                  ) : (
+                    `Pay Full Amount (₹${amount.toLocaleString()})`
+                  )}
                 </button>
               </div>
             </div>
@@ -813,12 +841,26 @@ export function BnplOfferWidget({ amount, onSelectAlternative }: BnplOfferWidget
                 </div>
               </div>
 
-              <div className="px-4 pb-5 text-center">
+              <div className="px-4 pb-5 flex items-center justify-center gap-3">
+                <button
+                  onClick={handlePayFull}
+                  disabled={isPayingFull}
+                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 disabled:opacity-60 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
+                >
+                  {isPayingFull ? (
+                    <span className="flex items-center gap-2">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
+                      Processing…
+                    </span>
+                  ) : (
+                    `Pay ₹${amount.toLocaleString()} in Full`
+                  )}
+                </button>
                 <button
                   onClick={onSelectAlternative}
-                  className="px-6 py-2.5 bg-text-primary hover:bg-gray-800 transition-colors text-white rounded-xl text-sm font-semibold shadow-md"
+                  className="px-4 py-2.5 border border-gray-300 hover:border-gray-400 transition-colors text-text-secondary rounded-xl text-sm font-semibold"
                 >
-                  Select Alternative Payment
+                  Other Methods
                 </button>
               </div>
             </div>

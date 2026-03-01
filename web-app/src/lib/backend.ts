@@ -97,6 +97,62 @@ export async function callConfirmEmiPlan(
   return unwrap(result);
 }
 
+export async function callPayFull(userId: string, purchaseAmount: number, merchantName?: string) {
+  const profile = getUsers().find((u: any) => u.user_id === userId);
+  const mode = process.env.PAYU_MODE ?? 'mock';
+  const txnid = `GC_FULL_${userId}_${Date.now()}`;
+  const productinfo = merchantName ?? 'GrabOn Purchase';
+  const returnUrl = process.env.PAYU_RETURN_URL ?? 'https://grabcredit-bnpl.vercel.app/payment/callback';
+  const now = new Date().toISOString();
+  const today = now.split('T')[0];
+
+  if (mode !== 'live') {
+    return {
+      status: 'success' as const,
+      txnid,
+      mihpayid: `MOCK_${Date.now()}`,
+      emi_plan_id: `PLAN_FULL_${Date.now()}`,
+      emi_tenure: 1,
+      monthly_emi: purchaseAmount,
+      emi_start_date: today,
+      schedule: [{ installment: 1, due_date: today, amount: purchaseAmount, principal: purchaseAmount, interest: 0 }],
+      total_amount: purchaseAmount,
+      processing_fee: 0,
+      total_cost: purchaseAmount,
+      mode: 'mock' as const,
+      timestamp: now,
+    };
+  }
+
+  const crypto = dynamicRequire('crypto');
+  const key = process.env.PAYU_KEY ?? '';
+  const salt = process.env.PAYU_SALT ?? '';
+  const amountStr = purchaseAmount.toFixed(2);
+  const firstname = profile?.name?.split(' ')[0] ?? 'Customer';
+  const email = profile?.email ?? 'customer@example.com';
+
+  const parts = [key, txnid, amountStr, productinfo, firstname, email, '', '', '', '', '', '', '', '', '', '', salt];
+  const hash = crypto.createHash('sha512').update(parts.join('|')).digest('hex');
+
+  return {
+    status: 'pending' as const,
+    txnid,
+    mihpayid: '',
+    emi_plan_id: '',
+    emi_tenure: 1,
+    monthly_emi: purchaseAmount,
+    emi_start_date: today,
+    schedule: [],
+    total_amount: purchaseAmount,
+    processing_fee: 0,
+    total_cost: purchaseAmount,
+    mode: 'live' as const,
+    timestamp: now,
+    payu_redirect_url: 'https://test.payu.in/_payment',
+    payu_params: { key, txnid, amount: amountStr, productinfo, firstname, email, surl: returnUrl, furl: returnUrl, hash },
+  };
+}
+
 export function callCheckFraudVelocity(userId: string) {
   const { checkFraudVelocity } = loadTool('checkFraudVelocity');
   const result = checkFraudVelocity(getUsers(), getTransactions(), { user_id: userId });
