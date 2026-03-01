@@ -1,0 +1,5 @@
+{
+  "installCommand": "echo 'skip'",
+  "buildCommand": "cd ../mcp-server && npm install && npm run build && cp -r dist ../web-app/mcp-server-dist && cd ../web-app && npm install && npm run build",
+  "outputDirectory": ".next"
+}
