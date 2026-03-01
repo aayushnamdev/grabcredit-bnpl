@@ -94,18 +94,33 @@ Open [http://localhost:3000](http://localhost:3000). Switch personas at the top 
 
 ### Manual setup (step-by-step)
 
+**Mac / Linux:**
 ```bash
 # Step 1: Build the MCP server
-cd mcp-server
-npm install
-npm run build       # compiles TypeScript → dist/, copies src/data/*.json → dist/data/
+cd mcp-server && npm install && npm run build
 
 # Step 2: Configure env vars
 cd ../web-app
-cp ../.env.example .env.local   # Windows: copy ..\\.env.example .env.local
+cp ../.env.example .env.local
 # Edit .env.local — paste your ANTHROPIC_API_KEY
 
 # Step 3: Start the web app
+npm install && npm run dev
+```
+
+**Windows (PowerShell — run each block separately):**
+```powershell
+# Step 1: Build the MCP server
+cd mcp-server
+npm install
+npm run build
+cd ..
+
+# Step 2: Configure env vars (then open the file and add your ANTHROPIC_API_KEY)
+copy .env.example web-app\.env.local
+
+# Step 3: Start the web app
+cd web-app
 npm install
 npm run dev
 ```
